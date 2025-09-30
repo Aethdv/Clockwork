@@ -461,7 +461,7 @@ Value Worker::search(
             // Late Move Pruning (LMP)
             if (moves_played >= (3 + 2 * depth + depth * depth * 3/4) / (2 - improving)) {
                 break;
-            } 
+            }
 
             // Forward Futility Pruning
             Value futility = ss->static_eval + 500 + 100 * depth;
