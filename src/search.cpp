@@ -459,7 +459,12 @@ Value Worker::search(
 
         if (!ROOT_NODE && best_value > -VALUE_WIN) {
             // Late Move Pruning (LMP)
-            if (moves_played >= (3 + 2 * depth + depth * depth * 3/4) / (2 - improving)) {
+            int divisor = 2 - improving;
+            if (cutnode) {
+                divisor = (divisor * 4) / 3;
+            }
+    
+            if (moves_played >= (3 + depth * depth) / divisor) {
                 break;
             }
 
