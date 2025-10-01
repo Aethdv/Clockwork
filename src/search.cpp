@@ -380,6 +380,18 @@ Value Worker::search(
             return tt_data->score;
         }
 
+        // TT-Based ProbCut
+        constexpr Value kProbCutMargin = 300;
+        constexpr Depth kProbCutDepthReduction = 4;
+
+        if (tt_data->bound() == Bound::Lower
+            && tt_data->depth >= depth - kProbCutDepthReduction
+            && tt_data->score >= beta + kProbCutMargin
+            && abs(beta) < VALUE_WIN
+            && abs(tt_data->score) < VALUE_WIN) {
+            return tt_data->score;
+        }
+
         // Update ttpv
         ttpv |= tt_data->ttpv();
     }
