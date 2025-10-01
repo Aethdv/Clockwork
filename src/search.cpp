@@ -442,6 +442,43 @@ Value Worker::search(
         }
     }
 
+    // ProbCut - prove beta cutoff with shallow search
+    // Attempts to prove a beta cutoff would occur at full depth by verifying
+    // with a reduced depth search at a raised beta threshold
+    if (!PV_NODE && !is_in_check && depth >= 5 && abs(beta) < VALUE_WIN 
+        && tt_data && tt_data->move != Move::none() && !quiet_move(tt_data->move)) {
+    
+        Value probcut_beta = beta + 200;
+    
+        // Only attempt if TT suggests this might work (not an upper bound)
+        if (tt_data->bound() != Bound::Upper && tt_data->score >= probcut_beta) {
+            Move probcut_move = tt_data->move;
+        
+            // Make the move
+            ss->cont_hist_entry = &m_td.history.get_cont_hist_entry(pos, probcut_move);
+            Position pos_after = pos.move(probcut_move, m_td.push_psqt_state());
+            repetition_info.push(pos_after.get_hash_key(), pos_after.is_reversible(probcut_move));
+        
+            // Shallow search with raised beta (null window)
+            Depth probcut_depth = depth - 4;
+            Value probcut_value = -search<IS_MAIN, false>(
+                pos_after, ss + 1, -probcut_beta, -probcut_beta + 1,
+                probcut_depth, ply + 1, !cutnode);
+        
+            // Cleanup
+            repetition_info.pop();
+            m_td.pop_psqt_state();
+            ss->cont_hist_entry = nullptr;
+        
+            // If verified: shallow search confirms the cutoff
+            if (!m_stopped && probcut_value >= probcut_beta) {
+                // Return beta for non-mate scores (conservative)
+                // Return actual value for mate scores (preserve mate distance)
+                return probcut_value >= VALUE_WIN ? probcut_value : beta;
+            }
+        }
+    }
+
     MovePicker moves{pos, m_td.history, tt_data ? tt_data->move : Move::none(), ply, ss};
     Move       best_move    = Move::none();
     Value      best_value   = -VALUE_INF;
