@@ -381,7 +381,7 @@ Value Worker::search(
         }
 
         // TT-Based ProbCut
-        constexpr Value kProbCutMargin = 300;
+        constexpr Value kProbCutMargin = 250;
         constexpr Depth kProbCutDepthReduction = 4;
 
         if (tt_data->bound() == Bound::Lower
