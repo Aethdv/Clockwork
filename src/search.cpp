@@ -380,24 +380,6 @@ Value Worker::search(
             return tt_data->score;
         }
 
-        // Small ProbCut
-        constexpr Value kProbCutBaseMargin = 250;
-        constexpr Value kProbCutMarginPerDepth = 30;
-        constexpr Depth kProbCutDepthReduction = 4;     
-
-        if (tt_data->bound() == Bound::Lower
-            && tt_data->depth >= depth - kProbCutDepthReduction
-            && abs(beta) < VALUE_WIN
-            && abs(tt_data->score) < VALUE_WIN) {
-    
-            Depth depthDiff = depth - tt_data->depth;
-            Value requiredMargin = kProbCutBaseMargin + depthDiff * kProbCutMarginPerDepth;
-    
-            if (tt_data->score >= beta + requiredMargin) {
-                return tt_data->score;
-            }
-        }
-
         // Update ttpv
         ttpv |= tt_data->ttpv();
     }
@@ -430,8 +412,8 @@ Value Worker::search(
         tt_adjusted_eval = tt_data->score;
     }
 
-    if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
-        && tt_adjusted_eval >= beta + tuned::rfp_margin * depth) {
+    if (!PV_NODE && !is_in_check && !ttpv && depth <= tuned::rfp_depth
+        && tt_adjusted_eval >= beta + tuned::rfp_margin * (depth - improving)) {
         return tt_adjusted_eval;
     }
 
