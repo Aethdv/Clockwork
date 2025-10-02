@@ -430,7 +430,7 @@ Value Worker::search(
     }
 
     if (!PV_NODE && !is_in_check && !pos.is_kp_endgame() && depth >= tuned::nmp_depth
-        && tt_adjusted_eval >= beta) {
+        && tt_adjusted_eval >= beta + 30) {
         int R =
           tuned::nmp_base_r + depth / 4 + std::min(3, (tt_adjusted_eval - beta) / 400) + improving;
         Position pos_after = pos.null_move();
@@ -772,7 +772,8 @@ Value Worker::quiesce(const Position& pos, Stack* ss, Value alpha, Value beta, i
 
     // Store to the TT
     Bound bound = best_value >= beta ? Bound::Lower : Bound::Upper;
-    m_searcher.tt.store(pos, ply, raw_eval, best_move, best_value, 0, ttpv, bound);
+    Move  tt_move = best_move != Move::none() ? best_move : tt_data ? tt_data->move : Move::none();
+    m_searcher.tt.store(pos, ply, raw_eval, tt_move, best_value, 0, ttpv, bound);
 
     return best_value;
 }
