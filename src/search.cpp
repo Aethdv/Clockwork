@@ -414,7 +414,7 @@ Value Worker::search(
 
     if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
         && tt_adjusted_eval >= beta + tuned::rfp_margin * depth) {
-        return tt_adjusted_eval;
+        return beta;
     }
 
     if (!PV_NODE && !is_in_check && !pos.is_kp_endgame() && depth >= tuned::nmp_depth
