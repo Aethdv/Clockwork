@@ -413,7 +413,7 @@ Value Worker::search(
     }
 
     if (!PV_NODE && !is_in_check && !ttpv && depth <= tuned::rfp_depth
-        && tt_adjusted_eval >= beta + tuned::rfp_margin * (depth - improving)) {
+        && tt_adjusted_eval >= beta + tuned::rfp_margin * (depth - !improving)) {
         return tt_adjusted_eval;
     }
 
