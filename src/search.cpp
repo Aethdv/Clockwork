@@ -412,9 +412,11 @@ Value Worker::search(
         tt_adjusted_eval = tt_data->score;
     }
 
-    if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
+    const bool stm_has_only_pawns = pos.piece_count(pos.active_color()) == 1 + pos.piece_count(pos.active_color(), PieceType::Pawn);
+    
+    if (!PV_NODE && !is_in_check && !stm_has_only_pawns && depth <= tuned::rfp_depth
         && tt_adjusted_eval >= beta + tuned::rfp_margin * depth) {
-        return tt_adjusted_eval;
+         return tt_adjusted_eval;
     }
 
     if (!PV_NODE && !is_in_check && !pos.is_kp_endgame() && depth >= tuned::nmp_depth
