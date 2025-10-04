@@ -415,6 +415,7 @@ Value Worker::search(
 
     Value margin = tuned::rfp_margin * depth;
     margin += pos.is_zugzwang_risk() * tuned::rfp_zugzwang_bonus;
+    margin += pos.is_kp_endgame() * tuned::rfp_kp_bonus;
 
     if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
         && tt_adjusted_eval >= beta + margin) {
