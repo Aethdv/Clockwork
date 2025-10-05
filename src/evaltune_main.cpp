@@ -218,6 +218,16 @@ int main() {
                   << std::endl;
         std::cout << std::endl;
 
+        std::cout << "inline const PParam ROOK_ON_SEVENTH = " << ROOK_ON_SEVENTH << ";"
+                  << std::endl;
+        std::cout << "inline const PParam ROOK_ON_SEVENTH_KING_TRAPPED = " << ROOK_ON_SEVENTH_KING_TRAPPED << ";"
+                  << std::endl;
+        std::cout << "inline const PParam ROOK_ON_OPEN_FILE = " << ROOK_ON_OPEN_FILE << ";"
+                  << std::endl;
+        std::cout << "inline const PParam ROOK_ON_SEMI_OPEN_FILE = " << ROOK_ON_SEMI_OPEN_FILE << ";"
+                  << std::endl;
+        std::cout << std::endl;
+
         std::cout << "inline const PParam POTENTIAL_CHECKER_VAL = " << POTENTIAL_CHECKER_VAL << ";"
                   << std::endl;
         std::cout << std::endl;

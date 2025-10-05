@@ -15,6 +15,11 @@ inline const PParam TEMPO_VAL  = S(51, 17);
 inline const PParam BISHOP_PAIR_VAL  = S(73, 183);
 inline const PParam DOUBLED_PAWN_VAL = S(-46, -79);
 
+inline const PParam ROOK_ON_SEVENTH              = S(0, 0);
+inline const PParam ROOK_ON_SEVENTH_KING_TRAPPED = S(0, 0);
+inline const PParam ROOK_ON_OPEN_FILE            = S(0, 0);
+inline const PParam ROOK_ON_SEMI_OPEN_FILE       = S(0, 0);
+
 inline const PParam POTENTIAL_CHECKER_VAL = S(-75, 0);
 
 inline const std::array<PParam, 6> PAWN_PHALANX = {
