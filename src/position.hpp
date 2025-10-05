@@ -223,6 +223,12 @@ public:
         return true;
     }
 
+    [[nodiscard]] inline bool is_zugzwang_risk() const {
+        const bool stm_has_only_pawns = piece_count(m_active_color) == 1 + piece_count(m_active_color, PieceType::Pawn);
+        const bool opp_has_pieces = piece_count(invert(m_active_color)) > 1 + piece_count(invert(m_active_color), PieceType::Pawn);
+        return stm_has_only_pawns && opp_has_pieces;
+    }
+
     [[nodiscard]] bool is_insufficient_material() const {
         auto wpcnt = piece_count(Color::White);
         auto bpcnt = piece_count(Color::Black);

@@ -414,8 +414,11 @@ Value Worker::search(
         tt_adjusted_eval = tt_data->score;
     }
 
-    if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth && !excluded
-        && tt_adjusted_eval >= beta + tuned::rfp_margin * depth) {
+    Value margin = tuned::rfp_margin * depth;
+    margin += pos.is_zugzwang_risk() * tuned::rfp_zugzwang_bonus * depth;
+
+    if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
+        && tt_adjusted_eval >= beta + margin) {
         return tt_adjusted_eval;
     }
 
