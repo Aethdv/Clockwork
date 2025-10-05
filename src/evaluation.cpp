@@ -14,10 +14,10 @@
 
 namespace Clockwork {
 
-static i32 chebyshev_distance(Square a, Square b) {
+static i32 manhattan_distance(Square a, Square b) {
     i32 file_dist = std::abs(a.file() - b.file());
     i32 rank_dist = std::abs(a.rank() - b.rank());
-    return std::max(file_dist, rank_dist);
+    return file_dist + rank_dist;
 }
 
 std::array<Bitboard, 64> king_ring_table = []() {
@@ -81,8 +81,11 @@ PScore evaluate_pawns(const Position& pos) {
                 eval += BLOCKED_PASSED_PAWN[sq.relative_sq(color).rank() - RANK_2];
             }
             
-            i32 our_king_dist   = chebyshev_distance(our_king, sq);
-            i32 their_king_dist = chebyshev_distance(their_king, sq);
+            i32 our_king_dist   = manhattan_distance(our_king, sq);
+            i32 their_king_dist = manhattan_distance(their_king, sq);
+            
+            our_king_dist = std::min(our_king_dist, 7);
+            their_king_dist = std::min(their_king_dist, 7);
             
             eval += FRIENDLY_KING_PASSED_PAWN_DISTANCE[our_king_dist];
             eval += ENEMY_KING_PASSED_PAWN_DISTANCE[their_king_dist];
