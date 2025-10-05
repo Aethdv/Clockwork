@@ -415,11 +415,7 @@ Value Worker::search(
     }
 
     Value margin = tuned::rfp_margin * depth;
-
-    if (pos.is_zugzwang_risk()) {
-        margin += tuned::rfp_zugzwang_bonus_const 
-                + tuned::rfp_zugzwang_bonus_scaled * depth;
-    }
+    margin += pos.is_zugzwang_risk() * tuned::rfp_zugzwang_bonus * depth;
 
     if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth
         && tt_adjusted_eval >= beta + margin) {

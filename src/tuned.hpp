@@ -11,8 +11,7 @@ namespace Clockwork::tuned {
                                                                   \
     /* RFP Values */                                              \
     TUNE(rfp_margin, 147, 40, 160, 4, 0.002)                      \
-    TUNE(rfp_zugzwang_bonus_const, 150, 0, 500, 20, 0.002)        \
-    TUNE(rfp_zugzwang_bonus_scaled, 50, 0, 150, 10, 0.002)        \
+    TUNE(rfp_zugzwang_bonus, 200, 0, 600, 20, 0.002)              \
                                                                   \
     NO_TUNE(rfp_depth, 7, 4, 10, .5, 0.002)                       \
                                                                   \
