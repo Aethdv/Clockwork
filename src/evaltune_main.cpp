@@ -220,6 +220,10 @@ int main() {
                   << std::endl;
         std::cout << std::endl;
 
+        std::cout << "inline i32 AETH_WEIGHT_FRIENDLY = " << AETH_WEIGHT_FRIENDLY << ";" << std::endl;
+        std::cout << "inline i32 AETH_WEIGHT_ENEMY = "    << AETH_WEIGHT_ENEMY    << ";" << std::endl;
+        std::cout << std::endl;
+
         auto print_table = [](const std::string& name, const auto& table) {
             std::cout << "inline const std::array<PParam, " << table.size() << "> " << name
                       << " = {" << std::endl

@@ -14,10 +14,28 @@
 
 namespace Clockwork {
 
-static i32 chebyshev_distance(Square a, Square b) {
+// Aeth Distance 
+//
+// Foundation:
+//   d_A(a, b, w) = max(Δfile, Δrank) + ⌊(w/100) × min(Δfile, Δrank) + 0.5⌋
+//
+// Interpretation:
+//   Any king path decomposes into diagonal + orthogonal segments:
+//     - Diagonal segment:    min(Δfile, Δrank) moves, cost (1 + w/100) each
+//     - Orthogonal segment:  |max(Δfile, Δrank) - min(Δfile, Δrank)| moves, cost 1
+//
+// Weight Semantics:
+//   w = 0   → Chebyshev distance
+//   w = 50  → Diagonal moves cost 1.5× orthogonal
+//   w = 100 → Manhattan distance
+//
+static i32 aeth_distance(Square a, Square b, i32 w_scaled) {
     i32 file_dist = std::abs(a.file() - b.file());
     i32 rank_dist = std::abs(a.rank() - b.rank());
-    return std::max(file_dist, rank_dist);
+    i32 max_dist  = std::max(file_dist, rank_dist);
+    i32 min_dist  = std::min(file_dist, rank_dist);
+
+    return max_dist + (min_dist * w_scaled + 50) / 100;
 }
 
 std::array<Bitboard, 64> king_ring_table = []() {
@@ -66,24 +84,31 @@ PScore evaluate_pawns(const Position& pos) {
     Square   their_king = pos.king_sq(them);
     PScore   eval       = PSCORE_ZERO;
 
-    eval += DOUBLED_PAWN_VAL * static_cast<i32>((pawns & pawns.shift(Direction::North)).popcount());
+    eval += DOUBLED_PAWN_VAL 
+          * static_cast<i32>((pawns & pawns.shift(Direction::North)).popcount());
 
     for (Square sq : pawns) {
         Square   push     = sq.push<color>();
         Bitboard stoppers = opp_pawns & passed_pawn_spans[static_cast<usize>(color)][sq.raw];
         if (stoppers.empty()) {
-            eval += PASSED_PAWN[sq.relative_sq(color).rank() - RANK_2];
+            i32 relative_rank = sq.relative_sq(color).rank();
+
+            eval += PASSED_PAWN[relative_rank - RANK_2];
+
             if (pos.attack_table(color).read(push).popcount()
                 > pos.attack_table(them).read(push).popcount()) {
-                eval += DEFENDED_PASSED_PUSH[sq.relative_sq(color).rank() - RANK_2];
+                eval += DEFENDED_PASSED_PUSH[relative_rank - RANK_2];
             }
             if (pos.piece_at(push) != PieceType::None) {
-                eval += BLOCKED_PASSED_PAWN[sq.relative_sq(color).rank() - RANK_2];
+                eval += BLOCKED_PASSED_PAWN[relative_rank - RANK_2];
             }
-
-            i32 our_king_dist   = chebyshev_distance(our_king, sq);
-            i32 their_king_dist = chebyshev_distance(their_king, sq);
-
+            Square friendly_target = (relative_rank >= 5)
+                ? Square::from_file_and_rank(sq.file(), color == Color::White ? 7 : 0)
+                : sq;
+            
+            i32 our_king_dist   = aeth_distance(our_king, friendly_target, AETH_WEIGHT_FRIENDLY);
+            i32 their_king_dist = aeth_distance(their_king, push, AETH_WEIGHT_ENEMY);
+            
             eval += FRIENDLY_KING_PASSED_PAWN_DISTANCE[our_king_dist];
             eval += ENEMY_KING_PASSED_PAWN_DISTANCE[their_king_dist];
         }
