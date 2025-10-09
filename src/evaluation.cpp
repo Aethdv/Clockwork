@@ -102,9 +102,10 @@ PScore evaluate_pawns(const Position& pos) {
             if (pos.piece_at(push) != PieceType::None) {
                 eval += BLOCKED_PASSED_PAWN[relative_rank - RANK_2];
             }
-            Square friendly_target = (relative_rank >= 5)
-                ? Square::from_file_and_rank(sq.file(), color == Color::White ? 7 : 0)
-                : sq;
+            Square promo_sq = Square::from_file_and_rank(sq.file(), color == Color::White ? 7 : 0);
+
+            Square friendly_target = (relative_rank >= 4) ? promo_sq : sq;
+            Square enemy_target    = (relative_rank >= 4) ? promo_sq : push;
             
             i32 our_king_dist   = aeth_distance(our_king, friendly_target, AETH_WEIGHT_FRIENDLY);
             i32 their_king_dist = aeth_distance(their_king, push, AETH_WEIGHT_ENEMY);
