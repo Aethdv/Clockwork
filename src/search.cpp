@@ -558,6 +558,11 @@ Value Worker::search(
         Position pos_after = pos.move(m, m_td.push_psqt_state());
         moves_played++;
 
+        // Check Extensions
+        if (extension == 0 && pos_after.is_in_check()) {
+            extension = 1;
+        }
+
         // Put hash into repetition table. TODO: encapsulate this and any other future adjustment to do "on move" into a proper function
         repetition_info.push(pos_after.get_hash_key(), pos_after.is_reversible(m));
 
