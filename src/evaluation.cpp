@@ -134,6 +134,30 @@ PScore evaluate_pieces(const Position& pos) {
 }
 
 template<Color color>
+PScore evaluate_rooks(const Position& pos) {
+    constexpr Color them = ~color;
+    constexpr i32 our_seventh_rank = color == Color::White ? 6 : 1;
+    constexpr i32 their_back_rank  = color == Color::White ? 7 : 0;
+
+    PScore eval = PSCORE_ZERO;
+
+    Bitboard seventh_rank_mask = Bitboard{static_cast<u64>(0xFF) << (our_seventh_rank * 8)};
+    Bitboard rooks = pos.bitboard_for(color, PieceType::Rook);
+    Bitboard rooks_on_seventh = rooks & seventh_rank_mask;
+
+    if (!rooks_on_seventh.empty()) {
+        i32 count = static_cast<i32>(rooks_on_seventh.popcount());
+        eval += ROOK_ON_SEVENTH * count;
+
+        if (pos.king_sq(them).rank() == their_back_rank) {
+            eval += ROOK_ON_SEVENTH_KING_TRAPPED * count;
+        }
+    }
+
+    return eval;
+}
+
+template<Color color>
 PScore evaluate_potential_checkers(const Position& pos) {
     constexpr Color opp = ~color;
 
@@ -204,6 +228,7 @@ Score evaluate_white_pov(const Position& pos, const PsqtState& psqt_state) {
     PScore eval = psqt_state.score();
     eval += evaluate_pieces<Color::White>(pos) - evaluate_pieces<Color::Black>(pos);
     eval += evaluate_pawns<Color::White>(pos) - evaluate_pawns<Color::Black>(pos);
+    eval += evaluate_rooks<Color::White>(pos) - evaluate_rooks<Color::Black>(pos);
     eval += evaluate_potential_checkers<Color::White>(pos)
           - evaluate_potential_checkers<Color::Black>(pos);
     eval += evaluate_threats<Color::White>(pos) - evaluate_threats<Color::Black>(pos);

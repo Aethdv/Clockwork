@@ -220,6 +220,10 @@ int main() {
                   << std::endl;
         std::cout << std::endl;
 
+        std::cout << "inline const PParam ROOK_ON_SEVENTH = " << ROOK_ON_SEVENTH << ";" << std::endl;
+        std::cout << "inline const PParam ROOK_ON_SEVENTH_KING_TRAPPED = " << ROOK_ON_SEVENTH_KING_TRAPPED << ";" << std::endl;
+        std::cout << std::endl;
+
         auto print_table = [](const std::string& name, const auto& table) {
             std::cout << "inline const std::array<PParam, " << table.size() << "> " << name
                       << " = {" << std::endl
