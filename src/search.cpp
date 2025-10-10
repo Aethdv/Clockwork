@@ -741,6 +741,13 @@ Value Worker::quiesce(const Position& pos, Stack* ss, Value alpha, Value beta, i
         return 0;
     }
 
+    // Mate distance pruning
+    alpha = std::max(alpha, mated_in(ply));
+    beta  = std::min(beta, -mated_in(ply) + 1);
+    if (alpha >= beta) {
+        return alpha;
+    }
+
     // 50 mr check
     if (pos.get_50mr_counter() >= 100) {
         return VALUE_DRAW;
