@@ -443,9 +443,9 @@ Value Worker::search(
     if (!PV_NODE && !is_in_check && depth <= tuned::rfp_depth && !excluded
         && tt_adjusted_eval >= beta + tuned::rfp_margin * depth) {
         if (!is_mate_score(tt_adjusted_eval) && !is_mate_score(beta)) {
-            return (tt_adjusted_eval + beta) / 2;
+            return (tt_adjusted_eval, beta + tuned::rfp_margin * depth / 2);
         }
-        return tt_adjusted_eval; // Return the original eval if a mate score is involved
+        return tt_adjusted_eval;
     }
 
     if (!PV_NODE && !is_in_check && !pos.is_kp_endgame() && depth >= tuned::nmp_depth && !excluded
