@@ -561,7 +561,8 @@ Value Worker::search(
 
         // Low-depth Singular Extension
         else if (!excluded && tt_data && m == tt_data->move && depth <= 7 && !is_in_check
-                 && ss->static_eval <= alpha - 26 && tt_data->bound() == Bound::Lower) {
+                 && ss->static_eval <= alpha - 15 - 3 * depth
+                 && tt_data->bound() == Bound::Lower) {
             extension = 1;
         }
 
