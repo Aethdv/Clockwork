@@ -146,19 +146,41 @@ PScore evaluate_pawn_push_threats(const Position& pos) {
 
     Bitboard pushable = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
 
-    Bitboard push_attacks =
-      pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
-      | pushable.shift_relative(color, Direction::North)
-          .shift_relative(color, Direction::NorthWest);
+    Bitboard push_squares        = pushable.shift_relative(color, Direction::North);
+    Bitboard opp_pawn_attacks    = pos.attacked_by(opp, PieceType::Pawn);
+    Bitboard safe_push_squares   = push_squares & ~opp_pawn_attacks;
+    Bitboard unsafe_push_squares = push_squares & opp_pawn_attacks;
 
-    eval += PAWN_PUSH_THREAT_KNIGHT
-          * (push_attacks & pos.bitboard_for(opp, PieceType::Knight)).ipopcount();
-    eval += PAWN_PUSH_THREAT_BISHOP
-          * (push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).ipopcount();
-    eval +=
-      PAWN_PUSH_THREAT_ROOK * (push_attacks & pos.bitboard_for(opp, PieceType::Rook)).ipopcount();
-    eval +=
-      PAWN_PUSH_THREAT_QUEEN * (push_attacks & pos.bitboard_for(opp, PieceType::Queen)).ipopcount();
+    Bitboard safe_pushable   = safe_push_squares.shift_relative(color, Direction::South);
+    Bitboard unsafe_pushable = unsafe_push_squares.shift_relative(color, Direction::South);
+
+    Bitboard safe_push_attacks =
+      safe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
+      | safe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthWest);
+
+    Bitboard unsafe_push_attacks =
+      unsafe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
+      | unsafe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthWest);
+
+    i32 knight_threats_safe = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Knight)).popcount());
+    i32 bishop_threats_safe = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).popcount());
+    i32 rook_threats_safe   = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Rook)).popcount());
+    i32 queen_threats_safe  = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Queen)).popcount());
+
+    i32 knight_threats_unsafe = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Knight)).popcount());
+    i32 bishop_threats_unsafe = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).popcount());
+    i32 rook_threats_unsafe   = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Rook)).popcount());
+    i32 queen_threats_unsafe  = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Queen)).popcount());
+
+    eval += PAWN_PUSH_THREAT_KNIGHT_SAFE * knight_threats_safe;
+    eval += PAWN_PUSH_THREAT_BISHOP_SAFE * bishop_threats_safe;
+    eval += PAWN_PUSH_THREAT_ROOK_SAFE   * rook_threats_safe;
+    eval += PAWN_PUSH_THREAT_QUEEN_SAFE  * queen_threats_safe;
+
+    eval += PAWN_PUSH_THREAT_KNIGHT_UNSAFE * knight_threats_unsafe;
+    eval += PAWN_PUSH_THREAT_BISHOP_UNSAFE * bishop_threats_unsafe;
+    eval += PAWN_PUSH_THREAT_ROOK_UNSAFE   * rook_threats_unsafe;
+    eval += PAWN_PUSH_THREAT_QUEEN_UNSAFE  * queen_threats_unsafe;
 
     return eval;
 }
