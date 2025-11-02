@@ -143,44 +143,41 @@ PScore evaluate_pawn_push_threats(const Position& pos) {
 
     Bitboard our_pawns  = pos.bitboard_for(color, PieceType::Pawn);
     Bitboard all_pieces = pos.board().get_occupied_bitboard();
+    Bitboard pushable   = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
 
-    Bitboard pushable = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
+    Bitboard opp_pawn_attacks = pos.attacked_by(opp, PieceType::Pawn);
 
-    Bitboard push_squares        = pushable.shift_relative(color, Direction::North);
-    Bitboard opp_pawn_attacks    = pos.attacked_by(opp, PieceType::Pawn);
-    Bitboard safe_push_squares   = push_squares & ~opp_pawn_attacks;
-    Bitboard unsafe_push_squares = push_squares & opp_pawn_attacks;
+    for (Square sq : pushable) {
+        Square push_sq = sq.push<color>();
 
-    Bitboard safe_pushable   = safe_push_squares.shift_relative(color, Direction::South);
-    Bitboard unsafe_pushable = unsafe_push_squares.shift_relative(color, Direction::South);
+        bool safe = !opp_pawn_attacks.is_set(push_sq);
+        if (safe) {
+            i32 our_def = static_cast<i32>(pos.attack_table(color).read(push_sq).popcount());
+            i32 opp_atk = static_cast<i32>(pos.attack_table(opp).read(push_sq).popcount());
+            safe = our_def >= opp_atk;
+        }
 
-    Bitboard safe_push_attacks =
-      safe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
-      | safe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthWest);
+        Bitboard single_push  = Bitboard::from_square(push_sq);
+        Bitboard push_attacks = single_push.shift_relative(color, Direction::NorthEast)
+                              | single_push.shift_relative(color, Direction::NorthWest);
 
-    Bitboard unsafe_push_attacks =
-      unsafe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
-      | unsafe_pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthWest);
+        i32 knight_threats = static_cast<i32>((push_attacks & pos.bitboard_for(opp, PieceType::Knight)).popcount());
+        i32 bishop_threats = static_cast<i32>((push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).popcount());
+        i32 rook_threats   = static_cast<i32>((push_attacks & pos.bitboard_for(opp, PieceType::Rook)).popcount());
+        i32 queen_threats  = static_cast<i32>((push_attacks & pos.bitboard_for(opp, PieceType::Queen)).popcount());
 
-    i32 knight_threats_safe = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Knight)).popcount());
-    i32 bishop_threats_safe = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).popcount());
-    i32 rook_threats_safe   = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Rook)).popcount());
-    i32 queen_threats_safe  = static_cast<i32>((safe_push_attacks & pos.bitboard_for(opp, PieceType::Queen)).popcount());
-
-    i32 knight_threats_unsafe = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Knight)).popcount());
-    i32 bishop_threats_unsafe = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).popcount());
-    i32 rook_threats_unsafe   = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Rook)).popcount());
-    i32 queen_threats_unsafe  = static_cast<i32>((unsafe_push_attacks & pos.bitboard_for(opp, PieceType::Queen)).popcount());
-
-    eval += PAWN_PUSH_THREAT_KNIGHT_SAFE * knight_threats_safe;
-    eval += PAWN_PUSH_THREAT_BISHOP_SAFE * bishop_threats_safe;
-    eval += PAWN_PUSH_THREAT_ROOK_SAFE   * rook_threats_safe;
-    eval += PAWN_PUSH_THREAT_QUEEN_SAFE  * queen_threats_safe;
-
-    eval += PAWN_PUSH_THREAT_KNIGHT_UNSAFE * knight_threats_unsafe;
-    eval += PAWN_PUSH_THREAT_BISHOP_UNSAFE * bishop_threats_unsafe;
-    eval += PAWN_PUSH_THREAT_ROOK_UNSAFE   * rook_threats_unsafe;
-    eval += PAWN_PUSH_THREAT_QUEEN_UNSAFE  * queen_threats_unsafe;
+        if (safe) {
+            eval += PAWN_PUSH_THREAT_KNIGHT_SAFE * knight_threats;
+            eval += PAWN_PUSH_THREAT_BISHOP_SAFE * bishop_threats;
+            eval += PAWN_PUSH_THREAT_ROOK_SAFE   * rook_threats;
+            eval += PAWN_PUSH_THREAT_QUEEN_SAFE  * queen_threats;
+        } else {
+            eval += PAWN_PUSH_THREAT_KNIGHT_UNSAFE * knight_threats;
+            eval += PAWN_PUSH_THREAT_BISHOP_UNSAFE * bishop_threats;
+            eval += PAWN_PUSH_THREAT_ROOK_UNSAFE   * rook_threats;
+            eval += PAWN_PUSH_THREAT_QUEEN_UNSAFE  * queen_threats;
+        }
+    }
 
     return eval;
 }
