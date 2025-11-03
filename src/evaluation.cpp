@@ -144,11 +144,15 @@ PScore evaluate_pawn_push_threats(const Position& pos) {
     Bitboard our_pawns  = pos.bitboard_for(color, PieceType::Pawn);
     Bitboard all_pieces = pos.board().get_occupied_bitboard();
 
-    Bitboard pushable       = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
-    Bitboard pushed_squares = pushable.shift_relative(color, Direction::North);
+    Bitboard pushed_squares = our_pawns.shift_relative(color, Direction::North) & ~all_pieces;
 
     auto [white_safe, black_safe] = pos.pawn_safety();
-    Bitboard safe_mask   = (color == Color::White) ? white_safe : black_safe;
+    Bitboard pawn_safe = (color == Color::White) ? white_safe : black_safe;
+
+    Bitboard attacked_by_us   = Bitboard{pos.attack_table(color).raw.nonzeros().to_bits()};
+    Bitboard attacked_by_them = Bitboard{pos.attack_table(opp).raw.nonzeros().to_bits()};
+
+    Bitboard safe_mask   = (attacked_by_us | ~attacked_by_them) & pawn_safe;
     Bitboard safe_pushes = pushed_squares & safe_mask;
 
     Bitboard all_push_attacks =
@@ -163,8 +167,7 @@ PScore evaluate_pawn_push_threats(const Position& pos) {
         Bitboard pieces   = pos.bitboard_for(opp, pt);
         i32 total_threats = (all_push_attacks & pieces).ipopcount();
         i32 safe_threats  = (safe_push_attacks & pieces).ipopcount();
-        i32 unsafe_threats = total_threats - safe_threats;
-        return safe_val * safe_threats + unsafe_val * unsafe_threats;
+        return safe_val * safe_threats + unsafe_val * (total_threats - safe_threats);
     };
 
     eval += evaluate_piece_type(PieceType::Knight, PAWN_PUSH_THREAT_KNIGHT_SAFE, PAWN_PUSH_THREAT_KNIGHT_UNSAFE);
