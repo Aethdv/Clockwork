@@ -237,16 +237,25 @@ int main() {
                   << std::endl;
         std::cout << "inline const PParam OUTPOST_BISHOP_VAL = " << OUTPOST_BISHOP_VAL << ";"
                   << std::endl;
-
         std::cout << std::endl;
 
-        std::cout << "inline const PParam PAWN_PUSH_THREAT_KNIGHT = " << PAWN_PUSH_THREAT_KNIGHT
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_KNIGHT_SAFE = " << PAWN_PUSH_THREAT_KNIGHT_SAFE
                   << ";" << std::endl;
-        std::cout << "inline const PParam PAWN_PUSH_THREAT_BISHOP = " << PAWN_PUSH_THREAT_BISHOP
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_BISHOP_SAFE = " << PAWN_PUSH_THREAT_BISHOP_SAFE
                   << ";" << std::endl;
-        std::cout << "inline const PParam PAWN_PUSH_THREAT_ROOK = " << PAWN_PUSH_THREAT_ROOK << ";"
-                  << std::endl;
-        std::cout << "inline const PParam PAWN_PUSH_THREAT_QUEEN = " << PAWN_PUSH_THREAT_QUEEN
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_ROOK_SAFE = " << PAWN_PUSH_THREAT_ROOK_SAFE
+                  << ";" << std::endl;
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_QUEEN_SAFE = " << PAWN_PUSH_THREAT_QUEEN_SAFE
+                  << ";" << std::endl;
+        std::cout << std::endl;
+
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_KNIGHT_UNSAFE = " << PAWN_PUSH_THREAT_KNIGHT_UNSAFE
+                  << ";" << std::endl;
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_BISHOP_UNSAFE = " << PAWN_PUSH_THREAT_BISHOP_UNSAFE
+                  << ";" << std::endl;
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_ROOK_UNSAFE = " << PAWN_PUSH_THREAT_ROOK_UNSAFE
+                  << ";" << std::endl;
+        std::cout << "inline const PParam PAWN_PUSH_THREAT_QUEEN_UNSAFE = " << PAWN_PUSH_THREAT_QUEEN_UNSAFE
                   << ";" << std::endl;
         std::cout << std::endl;
 

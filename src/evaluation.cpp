@@ -144,21 +144,33 @@ PScore evaluate_pawn_push_threats(const Position& pos) {
     Bitboard our_pawns  = pos.bitboard_for(color, PieceType::Pawn);
     Bitboard all_pieces = pos.board().get_occupied_bitboard();
 
-    Bitboard pushable = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
+    Bitboard pushable       = our_pawns & ~all_pieces.shift_relative(color, Direction::South);
+    Bitboard pushed_squares = pushable.shift_relative(color, Direction::North);
 
-    Bitboard push_attacks =
-      pushable.shift_relative(color, Direction::North).shift_relative(color, Direction::NorthEast)
-      | pushable.shift_relative(color, Direction::North)
-          .shift_relative(color, Direction::NorthWest);
+    auto [white_safe, black_safe] = pos.pawn_safety();
+    Bitboard safe_mask   = (color == Color::White) ? white_safe : black_safe;
+    Bitboard safe_pushes = pushed_squares & safe_mask;
 
-    eval += PAWN_PUSH_THREAT_KNIGHT
-          * (push_attacks & pos.bitboard_for(opp, PieceType::Knight)).ipopcount();
-    eval += PAWN_PUSH_THREAT_BISHOP
-          * (push_attacks & pos.bitboard_for(opp, PieceType::Bishop)).ipopcount();
-    eval +=
-      PAWN_PUSH_THREAT_ROOK * (push_attacks & pos.bitboard_for(opp, PieceType::Rook)).ipopcount();
-    eval +=
-      PAWN_PUSH_THREAT_QUEEN * (push_attacks & pos.bitboard_for(opp, PieceType::Queen)).ipopcount();
+    Bitboard all_push_attacks =
+        pushed_squares.shift_relative(color, Direction::NorthEast) |
+        pushed_squares.shift_relative(color, Direction::NorthWest);
+
+    Bitboard safe_push_attacks =
+        safe_pushes.shift_relative(color, Direction::NorthEast) |
+        safe_pushes.shift_relative(color, Direction::NorthWest);
+
+    auto evaluate_piece_type = [&](PieceType pt, PParam safe_val, PParam unsafe_val) {
+        Bitboard pieces   = pos.bitboard_for(opp, pt);
+        i32 total_threats = (all_push_attacks & pieces).ipopcount();
+        i32 safe_threats  = (safe_push_attacks & pieces).ipopcount();
+        i32 unsafe_threats = total_threats - safe_threats;
+        return safe_val * safe_threats + unsafe_val * unsafe_threats;
+    };
+
+    eval += evaluate_piece_type(PieceType::Knight, PAWN_PUSH_THREAT_KNIGHT_SAFE, PAWN_PUSH_THREAT_KNIGHT_UNSAFE);
+    eval += evaluate_piece_type(PieceType::Bishop, PAWN_PUSH_THREAT_BISHOP_SAFE, PAWN_PUSH_THREAT_BISHOP_UNSAFE);
+    eval += evaluate_piece_type(PieceType::Rook,   PAWN_PUSH_THREAT_ROOK_SAFE,   PAWN_PUSH_THREAT_ROOK_UNSAFE);
+    eval += evaluate_piece_type(PieceType::Queen,  PAWN_PUSH_THREAT_QUEEN_SAFE,  PAWN_PUSH_THREAT_QUEEN_UNSAFE);
 
     return eval;
 }

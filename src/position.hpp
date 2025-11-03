@@ -199,6 +199,31 @@ public:
         return attack_table(color).get_piece_mask_bitboard(piece_list(color).mask_eq(ptype));
     }
 
+    [[nodiscard]] Wordboard attacked_by_wordboard(Color color, PieceType ptype) const {
+        return attack_table(color)
+             & Wordboard{u16x64::splat(piece_list(color).mask_eq(ptype).value())};
+    }
+
+    [[nodiscard]] std::array<Bitboard, 2> pawn_safety() const {
+        Wordboard white = attacked_by_wordboard(Color::White, PieceType::Pawn);
+        Wordboard black = attacked_by_wordboard(Color::Black, PieceType::Pawn);
+
+        m16x64 white_nonzero_attacks = white.raw.nonzeros();
+        m16x64 black_nonzero_attacks = black.raw.nonzeros();
+        m16x64 white_two_attacks     = (white.raw & (white.raw - u16x64::splat(1))).nonzeros();
+        m16x64 black_two_attacks     = (black.raw & (black.raw - u16x64::splat(1))).nonzeros();
+
+        i16x64 white_attacks =
+          white_two_attacks.mask(i16x64::splat(1)) + white_nonzero_attacks.mask(i16x64::splat(1));
+        i16x64 black_attacks =
+          black_two_attacks.mask(i16x64::splat(1)) + black_nonzero_attacks.mask(i16x64::splat(1));
+
+        Bitboard black_gte_white{~white_attacks.gt(black_attacks).to_bits()};
+        Bitboard white_gte_black{~black_attacks.gt(white_attacks).to_bits()};
+
+        return {white_gte_black, black_gte_white};
+    }
+
     [[nodiscard]] usize mobility_of(Color color, PieceId id) const {
         return attack_table(color).count_matching_mask(id.to_piece_mask());
     }
