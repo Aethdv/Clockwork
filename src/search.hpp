@@ -39,9 +39,7 @@ enum class ThreadType {
 
 struct PV {
 public:
-    void clear() {
-        m_pv.clear();
-    }
+    void clear() { m_pv.clear(); }
 
     void set(Move move, const PV& child_pv_line) {
         m_pv.clear();
@@ -49,9 +47,7 @@ public:
         m_pv.append(child_pv_line.m_pv);
     }
 
-    Move first_move() const {
-        return m_pv.empty() ? Move::none() : m_pv[0];
-    }
+    Move first_move() const { return m_pv.empty() ? Move::none() : m_pv[0]; }
 
     friend std::ostream& operator<<(std::ostream& os, const PV& pv);
 
@@ -85,9 +81,7 @@ struct ThreadData {
         return psqt_states.back();
     }
 
-    void pop_psqt_state() {
-        psqt_states.pop_back();
-    }
+    void pop_psqt_state() { psqt_states.pop_back(); }
 };
 
 class Searcher {
@@ -117,9 +111,7 @@ public:
 
     u64  node_count();
     void reset();
-    void resize_tt(size_t mb) {
-        tt.resize(mb);
-    }
+    void resize_tt(size_t mb) { tt.resize(mb); }
 
 private:
     std::vector<std::unique_ptr<Worker>> m_workers;
@@ -138,19 +130,11 @@ public:
     void prepare();
     void start_searching();
 
-    void set_stopped() {
-        m_stopped = true;
-    }
-    void reset_thread_data() {
-        m_td = {};
-    }
+    void set_stopped() { m_stopped = true; }
+    void reset_thread_data() { m_td = {}; }
 
-    [[nodiscard]] ThreadType thread_type() const {
-        return m_thread_type;
-    }
-    [[nodiscard]] u64 search_nodes() const {
-        return m_search_nodes.load(std::memory_order_relaxed);
-    }
+    [[nodiscard]] ThreadType thread_type() const { return m_thread_type; }
+    [[nodiscard]] u64        search_nodes() const { return m_search_nodes.load(std::memory_order_relaxed); }
 
     [[nodiscard]] Value get_draw_score() const {
         return (search_nodes() & 3) - 2;  // Randomize between -2 and +2
@@ -159,9 +143,7 @@ public:
 private:
     void thread_main();
 
-    void increment_search_nodes() {
-        m_search_nodes.fetch_add(1, std::memory_order_relaxed);
-    }
+    void increment_search_nodes() { m_search_nodes.fetch_add(1, std::memory_order_relaxed); }
 
     std::atomic<u64>         m_search_nodes;
     time::TimePoint          m_search_start;
@@ -180,8 +162,7 @@ private:
     template<bool IS_MAIN>
     Move iterative_deepening(const Position& root_position);
     template<bool IS_MAIN, bool PV_NODE>
-    Value search(
-      const Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, i32 ply, bool cutnode);
+    Value search(const Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, i32 ply, bool cutnode);
     template<bool IS_MAIN>
     Value quiesce(const Position& pos, Stack* ss, Value alpha, Value beta, i32 ply);
     Value evaluate(const Position& pos);

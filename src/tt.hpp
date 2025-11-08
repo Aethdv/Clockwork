@@ -29,12 +29,8 @@ struct TTData {
     Depth depth;
     u8    ttpv_bound;
 
-    [[nodiscard]] Bound bound() const {
-        return static_cast<Bound>(ttpv_bound & 0b011);
-    }
-    [[nodiscard]] bool ttpv() const {
-        return static_cast<bool>(ttpv_bound & 0b100);
-    }
+    [[nodiscard]] Bound bound() const { return static_cast<Bound>(ttpv_bound & 0b011); }
+    [[nodiscard]] bool  ttpv() const { return static_cast<bool>(ttpv_bound & 0b100); }
 };
 
 class TT {
@@ -46,16 +42,10 @@ public:
     ~TT();
 
     std::optional<TTData> probe(const Position& position, i32 ply) const;
-    void                  store(const Position& position,
-                                i32             ply,
-                                Value           eval,
-                                Move            move,
-                                Value           score,
-                                Depth           depth,
-                                bool            ttpv,
-                                Bound           bound);
-    void                  resize(size_t mb);
-    void                  clear();
+    void store(const Position& position, i32 ply, Value eval, Move move, Value score, Depth depth, bool ttpv,
+               Bound bound);
+    void resize(size_t mb);
+    void clear();
 
 private:
     TTEntry* m_entries;
