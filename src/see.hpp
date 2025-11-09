@@ -13,7 +13,7 @@
 namespace Clockwork::SEE {
 
 inline Value value(PieceType ptype) {
-    constexpr std::array<Value, 7> TABLE{{0, 100, 300, 300, 500, 900, 10000}};
+    constexpr std::array<Value, 7> TABLE{{0, 100, 325, 300, 500, 900, 10000}};
     return TABLE[static_cast<usize>(ptype)];
 }
 
