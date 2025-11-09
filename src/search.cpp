@@ -640,7 +640,7 @@ Value Worker::search(
 
             reduction += alpha_raises * 512;
 
-            reduction += (512 * !improving);
+            reduction += (256 * !improving);
 
             reduction -= 1024 * pos_after.is_in_check();
 
