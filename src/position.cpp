@@ -789,9 +789,10 @@ Position::calc_attacks_slow(Square sq) {
     m8x64 visible     = geometry::superpiece_attacks(ray_places, ray_valid);
     m8x64 sec_visible = geometry::superpiece_attacks((~visible).mask(ray_places), ray_valid);
 
-    m8x64 attackers             = geometry::attackers_from_rays(ray_places);
-    m8x64 visible_attackers     = visible & attackers;
-    m8x64 sec_visible_attackers = sec_visible & attackers & geometry::slider_mask(ray_places);
+    m8x64 attackers         = geometry::attackers_from_rays(ray_places);
+    m8x64 visible_attackers = visible & attackers;
+    m8x64 sec_visible_attackers =
+      sec_visible.andnot(visible) & attackers & geometry::slider_mask(ray_places);
 
     m8x64 white_attackers = ~color & visible_attackers;
     m8x64 black_attackers = color & visible_attackers;
