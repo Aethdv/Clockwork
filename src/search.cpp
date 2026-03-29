@@ -475,7 +475,8 @@ Value Worker::search(
     }
 
     // Internal Iterative Reductions
-    if ((PV_NODE || cutnode) && depth >= 8 && (!tt_data || tt_data->move == Move::none())) {
+    if ((PV_NODE || cutnode) && depth >= 8 && !excluded
+        && (!tt_data || tt_data->move == Move::none())) {
         depth--;
     }
 
@@ -494,8 +495,12 @@ Value Worker::search(
     if (!PV_NODE && !is_in_check && !pos.is_kp_endgame() && depth >= tuned::nmp_depth && !excluded
         && tt_adjusted_eval >= beta + tuned::nmp_beta_margin && !is_being_mated_score(beta)
         && !m_in_nmp_verification) {
-        int R = tuned::nmp_base_r + depth / 4
-              + std::min(3, (tt_adjusted_eval - beta) / tuned::nmp_beta_diff) + improving;
+
+        i32 R = tuned::nmp_base_r + depth * tuned::nmp_depth_r
+              + std::min(3 * 64, (tt_adjusted_eval - beta) * 64 / tuned::nmp_beta_diff)
+              + improving * tuned::nmp_improving_r;
+        R /= 64;
+
         Position pos_after = pos.null_move();
 
         repetition_info.push(pos_after.get_hash_key(), true);
@@ -638,7 +643,7 @@ Value Worker::search(
         if (!excluded && tt_data && m == tt_data->move && depth >= tuned::sing_min_depth
             && tt_data->depth >= depth - tuned::sing_depth_margin
             && tt_data->bound() != Bound::Upper) {
-            Value singular_beta  = tt_data->score - depth * tuned::sing_beta_margin;
+            Value singular_beta  = tt_data->score - depth * tuned::sing_beta_margin / 64;
             int   singular_depth = depth / 2;
 
             ss->excluded_move    = m;
@@ -751,7 +756,7 @@ Value Worker::search(
             }
 
             if (ttpv && tt_data && tt_data->score <= alpha) {
-                reduction += tuned::lmr_tt_capture_red;
+                reduction += tuned::lmr_ttpv_fail_low;
             }
 
             if (tt_data && tt_data->move.is_capture() && !m.is_capture()) {
@@ -924,6 +929,11 @@ Value Worker::quiesce(const Position& pos, Stack* ss, Value alpha, Value beta, i
 
     // 50 mr check
     if (pos.get_50mr_counter() >= 100) {
+        return get_draw_score();
+    }
+
+    // Insufficient material check
+    if (pos.is_insufficient_material()) {
         return get_draw_score();
     }
 
