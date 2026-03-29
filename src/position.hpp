@@ -205,12 +205,22 @@ public:
         return attack_table(color).get_piece_mask_bitboard(piece_list(color).mask_eq(ptype));
     }
 
+    [[nodiscard]] Bitboard xray_by(Color color, PieceType ptype) const {
+        return xray_table(color).get_piece_mask_bitboard(piece_list(color).mask_eq(ptype));
+    }
+
     [[nodiscard]] usize mobility_of(Color color, PieceId id) const {
         return attack_table(color).count_matching_mask(id.to_piece_mask());
     }
 
     [[nodiscard]] usize mobility_of(Color color, PieceId id, Bitboard mask) const {
         return (attack_table(color).get_piece_mask_bitboard(id.to_piece_mask()) & mask).popcount();
+    }
+
+    [[nodiscard]] usize mobility_with_xray_of(Color color, PieceId id, Bitboard mask) const {
+        Bitboard attacks = attack_table(color).get_piece_mask_bitboard(id.to_piece_mask());
+        Bitboard xrays   = xray_table(color).get_piece_mask_bitboard(id.to_piece_mask());
+        return ((attacks | xrays) & mask).popcount();
     }
 
     [[nodiscard]] Wordboard create_attack_table_superpiece_mask(Square                   sq,
