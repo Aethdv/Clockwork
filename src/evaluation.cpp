@@ -344,7 +344,7 @@ PScore evaluate_king_safety(const Position& pos) {
 
     for (PieceType pt : {PieceType::Pawn, PieceType::Knight, PieceType::Bishop, PieceType::Rook,
                          PieceType::Queen}) {
-        Bitboard attacked = pos.attacked_by(opp, pt);
+        Bitboard attacked = pos.attacked_by(opp, pt) | pos.xray_by(opp, pt);
         Bitboard inner    = attacked & king_ring;
         Bitboard outer    = attacked & extended_ring & ~king_ring;
         eval += PT_INNER_RING_ATTACKS[static_cast<usize>(pt) - static_cast<usize>(PieceType::Pawn)]
