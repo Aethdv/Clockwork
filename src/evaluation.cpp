@@ -245,7 +245,7 @@ PScore evaluate_pieces(const Position& pos) {
         eval += KNIGHT_MOBILITY[pos.mobility_of(color, id, ~bb)];
     }
     for (PieceId id : pos.get_piece_mask(color, PieceType::Bishop)) {
-        eval += BISHOP_MOBILITY[pos.mobility_of(color, id, ~bb)];
+        eval += BISHOP_MOBILITY[pos.mobility_with_xray_of(color, id, ~bb)];
         Square sq = pos.piece_list_sq(color)[id];
         eval += BISHOP_PAWNS[std::min(
                   static_cast<usize>(8),
@@ -257,8 +257,8 @@ PScore evaluate_pieces(const Position& pos) {
     }
     bb2 |= pos.attacked_by(opp, PieceType::Knight) | pos.attacked_by(opp, PieceType::Bishop);
     for (PieceId id : pos.get_piece_mask(color, PieceType::Rook)) {
-        eval += ROOK_MOBILITY[pos.mobility_of(color, id, ~bb)];
-        eval += ROOK_MOBILITY[pos.mobility_of(color, id, ~bb2)];
+        eval += ROOK_MOBILITY[pos.mobility_with_xray_of(color, id, ~bb)];
+        eval += ROOK_MOBILITY[pos.mobility_with_xray_of(color, id, ~bb2)];
         // Rook lineups
         Bitboard rook_file = Bitboard::file_mask(pos.piece_list_sq(color)[id].file());
         eval += ROOK_LINEUP
@@ -269,8 +269,8 @@ PScore evaluate_pieces(const Position& pos) {
     }
     bb2 |= pos.attacked_by(opp, PieceType::Rook);
     for (PieceId id : pos.get_piece_mask(color, PieceType::Queen)) {
-        eval += QUEEN_MOBILITY[pos.mobility_of(color, id, ~bb)];
-        eval += QUEEN_MOBILITY[pos.mobility_of(color, id, ~bb2)];
+        eval += QUEEN_MOBILITY[pos.mobility_with_xray_of(color, id, ~bb)];
+        eval += QUEEN_MOBILITY[pos.mobility_with_xray_of(color, id, ~bb2)];
     }
     if (pos.piece_count(color, PieceType::Bishop) >= 2) {
         eval += BISHOP_PAIR_VAL;
@@ -451,15 +451,15 @@ PScore apply_winnable(const Position& pos, PScore& score, usize phase) {
 Score evaluate_white_pov(const Position& pos, const PsqtState& psqt_state) {
     const Color us    = pos.active_color();
     usize       phase = pos.piece_count(Color::White, PieceType::Knight)
-                + pos.piece_count(Color::Black, PieceType::Knight)
-                + pos.piece_count(Color::White, PieceType::Bishop)
-                + pos.piece_count(Color::Black, PieceType::Bishop)
-                + 2
-                    * (pos.piece_count(Color::White, PieceType::Rook)
-                       + pos.piece_count(Color::Black, PieceType::Rook))
-                + 4
-                    * (pos.piece_count(Color::White, PieceType::Queen)
-                       + pos.piece_count(Color::Black, PieceType::Queen));
+                      + pos.piece_count(Color::Black, PieceType::Knight)
+                      + pos.piece_count(Color::White, PieceType::Bishop)
+                      + pos.piece_count(Color::Black, PieceType::Bishop)
+                      + 2
+                          * (pos.piece_count(Color::White, PieceType::Rook)
+                             + pos.piece_count(Color::Black, PieceType::Rook))
+                      + 4
+                          * (pos.piece_count(Color::White, PieceType::Queen)
+                             + pos.piece_count(Color::Black, PieceType::Queen));
 
     phase = std::min<usize>(phase, 24);
 
